@@ -11,13 +11,21 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{matrix.os}}
     steps:
       - name: checkout
         uses: actions/checkout@v4
 
-      - name: install
+      - name: install on linux
+        if: matrix.os == 'linux-latest'
         run: sudo apt-get install -y meson ninja-build
+
+      - name: install on macos
+        if: matrix.os == 'macos-latest'
+        run: brew install meson ninja
 
       - name: build
         run: |
@@ -26,13 +34,13 @@ jobs:
 
       - name: zip
         if: startsWith(github.ref, 'refs/tags/')
-        run: zip -j out.zip build/test-nvm 
+        run: zip -j ${{matrix.os}}.zip build/test-nvm 
         # -j ignores the directory structure, so the zip contains just the file
 
       - name: release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: out.zip
+          files: ${{matrix.os}}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
