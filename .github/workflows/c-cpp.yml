@@ -1,0 +1,44 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+    - name: build
+      uses: BSFishy/meson-build@v1.0.3
+      with:
+        # The action to run
+        action: build
+    - name: zip
+      run: |
+        zip ./build/out.zip ./build/test-nvm
+    - name: create release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    - name: release the created release (lol)
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./build/out.zip # Path to your built file(s)
+        asset_name: ${{github.ref}}.zip # Desired name for the asset in the release
+        asset_content_type: application/zip # Set appropriate content type
