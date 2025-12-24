@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: install on linux
-        if: matrix.os == 'linux-latest'
+        if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install -y meson ninja-build
 
       - name: install on macos
