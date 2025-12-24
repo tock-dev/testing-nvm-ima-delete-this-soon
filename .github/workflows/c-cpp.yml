@@ -2,7 +2,6 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ "main" ]
     tags:
       - 'v*.*.*'
 
@@ -19,13 +18,13 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      - name: install on linux
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y meson ninja-build
-
-      - name: install on macos
-        if: matrix.os == 'macos-latest'
-        run: brew install meson ninja
+      - name: install dependencies
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update && sudo apt-get install -y meson ninja-build
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install meson ninja
+          fi
 
       - name: build
         run: |
